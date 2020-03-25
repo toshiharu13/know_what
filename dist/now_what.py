@@ -47,6 +47,7 @@ if response.success():
 else:
     print(ARM + ' is not available')
 
-
+while True:
+    pass
 
 
