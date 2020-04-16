@@ -1,6 +1,7 @@
 import os
 import pythonping
 import socket
+import datetime
 
 def knowversion(ARM,way_to): #берем версию программы установленной сейчас
     os.system('wmic /NODE:\"' + ARM + '\" /USER:\"' + user + '\" /password: \"' + pasw + '\" product get name| findstr \"' + name_programm + '\">\"' + way_to + '\\temp\\\"' + ARM + '.txt')
@@ -34,15 +35,25 @@ def know_OS(ARM,way_to):
             if linecount == 3:
                 return tmp
 
-name_programm = 'Дежурн' #поиск программы ведется по этому словосочетанию
-user = 'gmc\\' + input('type username ')
-pasw = input('type password ')
-way_to = 'c:\\nowwhat'  #папка где всё хранится
+def logwritting(data):
+    with open(way_to + '\\log.txt', 'a')as logfile:
+        logfile.write(data + '\n')
 
-with open(way_to + "\list.txt") as list_of_arms:
+name_programm = 'Дежурн' #поиск программы ведется по этому словосочетанию
+user = 'gmc\\' + input('type username ') #имя пользователя с правами админа
+pasw = input('type password ') #пароль
+way_to = 'c:\\nowwhat'  #папка где всё хранится
+linebreake = '********************'
+
+#подгатавливаем файл логов к записи событий данной сессии
+with open(way_to + '\\log.txt', 'w') as logfile:
+    logfile.write(str(datetime.datetime.now()) + '\n')
+
+with open(way_to + "\list.txt") as list_of_arms: #читаем по списку армы
     for ARM in list_of_arms:
         ARM = ARM.strip()
-        print('********************')
+        print(linebreake)
+        logwritting(linebreake)
 
         # если АРМ доступен, узнаём IP адрес
         response = pythonping.ping(ARM, count=1 )
@@ -51,6 +62,8 @@ with open(way_to + "\list.txt") as list_of_arms:
                 IP_address = socket.gethostbyname(ARM)
                 print('IP addres of ARM: ' + IP_address)
                 print('Name of ARM ' + ARM)
+                logwritting(ARM)
+                logwritting(IP_address)
 
                 #узнаём версию СПО
                 print('searching soft...')
@@ -59,21 +72,26 @@ with open(way_to + "\list.txt") as list_of_arms:
                     print('now installed ' + tmpprogramm)
                 else:
                     print('No DT programm installed')
+                logwritting(tmpprogramm)
 
                 #узнаём активного пользователя
                 user_DT = knowuser(ARM,way_to)
                 print('Now working: ' + user_DT + ' user')
+                logwritting(user_DT)
 
                 #узнаём версию OS
                 version = know_OS(ARM,way_to)
                 print('Версия ОС: ' + version)
+                logwritting(version)
 
             else:
-                print(ARM + ' is not available')
+                notavailable = ARM + ' is not available'
+                print(notavailable)
+                logwritting(notavailable)
         except:
             print('can\'t work with' + ARM)
             break
-print('********************')
-print('********************')
+print(linebreake)
+print(linebreake)
 while True:
     pass
