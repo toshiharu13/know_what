@@ -46,29 +46,34 @@ with open(way_to + "\list.txt") as list_of_arms:
 
         # если АРМ доступен, узнаём IP адрес
         response = pythonping.ping(ARM, count=1 )
-        if response.success():
-            IP_address = socket.gethostbyname(ARM)
-            print('IP addres of ARM: ' + IP_address)
-            print('Name of ARM ' + ARM)
+        try:
+            if response.success():
+                IP_address = socket.gethostbyname(ARM)
+                print('IP addres of ARM: ' + IP_address)
+                print('Name of ARM ' + ARM)
 
-            #узнаём версию СПО
-            print('searching soft...')
-            tmpprogramm = knowversion(ARM,way_to)
-            if tmpprogramm != '':
-                print('now installed ' + tmpprogramm)
+                #узнаём версию СПО
+                print('searching soft...')
+                tmpprogramm = knowversion(ARM,way_to)
+                if tmpprogramm != '':
+                    print('now installed ' + tmpprogramm)
+                else:
+                    print('No DT programm installed')
+
+                #узнаём активного пользователя
+                user_DT = knowuser(ARM,way_to)
+                print('Now working: ' + user_DT + ' user')
+
+                #узнаём версию OS
+                version = know_OS(ARM,way_to)
+                print('Версия ОС: ' + version)
+
             else:
-                print('No DT programm installed')
-
-            #узнаём активного пользователя
-            user_DT = knowuser(ARM,way_to)
-            print('Now working: ' + user_DT + ' user')
-
-            #узнаём версию OS
-            version = know_OS(ARM,way_to)
-            print('Версия ОС: ' + version)
-
-        else:
-            print(ARM + ' is not available')
-
+                print(ARM + ' is not available')
+        except:
+            print('can\'t work with' + ARM)
+            break
+print('********************')
+print('********************')
 while True:
     pass
