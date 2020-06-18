@@ -42,8 +42,10 @@ def logwritting(data):
 name_programm = 'Дежурн' #поиск программы ведется по этому словосочетанию
 user = 'gmc\\' + input('type username ') #имя пользователя с правами админа
 pasw = input('type password ') #пароль
-way_to = 'c:\\nowwhat'  #папка где всё хранится
+#way_to = 'c:\\nowwhat'  #папка где всё хранится
 linebreake = '********************'
+way_to = os.path.abspath(__file__)
+way_to = os.path.dirname(way_to)
 
 #подгатавливаем файл логов к записи событий данной сессии
 with open(way_to + '\\log.txt', 'w') as logfile:
