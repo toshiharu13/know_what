@@ -2,18 +2,18 @@ import os
 import pythonping
 import socket
 import datetime
+import tkinter
 
 def knowversion(ARM,way_to): #берем версию программы установленной сейчас
     os.system('wmic /NODE:\"' + ARM + '\" /USER:\"' + user + '\" /password: \"' + pasw + '\" product get name| findstr \"' + name_programm + '\">\"' + way_to + '\\temp\\\"' + ARM + '.txt')
     if os.stat(way_to + '\\temp\\' + ARM + '.txt').st_size == 0:
         print('Программы не найдено')
         tmp = ''
+        return tmp
     with open(way_to + '\\temp\\' + ARM + '.txt') as t:
         for tmp in t:
             tmp = tmp.encode('cp1251').decode('cp866').strip()
             return tmp
-            #break
-    #return tmp
 
 def knowuser(ARM, way_to):
     os.system('wmic.exe /node:\"' + ARM + '\" computersystem get username >' + way_to + '\\temp\\' + ARM + '.txt')
@@ -39,61 +39,102 @@ def logwritting(data):
     with open(way_to + '\\log.txt', 'a')as logfile:
         logfile.write(data + '\n')
 
+def Start(ivent):
+    # передаём занчение логин пароль в переменные
+    global user, pasw
+    user = 'gmc\\' + enter_login.get()  # имя пользователя с правами админа
+    pasw = enter_passw.get()  # пароль
+
+    # читаем по списку армы
+    with open(way_to + "\list.txt") as list_of_arms:
+        for ARM in list_of_arms:
+            ARM = ARM.strip()
+            print(linebreake)
+            logwritting(linebreake)
+
+            # если АРМ доступен, узнаём IP адрес
+            response = pythonping.ping(ARM, count=1)
+            try:
+                if response.success():
+                    IP_address = socket.gethostbyname(ARM)
+                    print('IP addres of ARM: ' + IP_address)
+                    print('Name of ARM ' + ARM)
+                    logwritting(ARM)
+                    logwritting(IP_address)
+
+                    # узнаём версию СПО
+                    print('searching soft...')
+                    tmpprogramm = knowversion(ARM, way_to)
+                    if tmpprogramm != '':
+                        print('now installed ' + tmpprogramm)
+                    else:
+                        print('No DT programm installed')
+                    logwritting(tmpprogramm)
+
+                    # узнаём активного пользователя
+                    user_DT = knowuser(ARM, way_to)
+                    print('Now working: ' + user_DT + ' user')
+                    logwritting(user_DT)
+
+                    # узнаём версию OS
+                    version = know_OS(ARM, way_to)
+                    print('Версия ОС: ' + version)
+                    logwritting(version)
+
+                else:
+                    notavailable = ARM + ' is not available'
+                    print(notavailable)
+                    logwritting(notavailable)
+            except:
+                print('can\'t work with' + ARM)
+                break
+    print(linebreake)
+    print(linebreake)
+    # while True:
+    #   pass
+
+
+
 name_programm = 'Дежурн' #поиск программы ведется по этому словосочетанию
-user = 'gmc\\' + input('type username ') #имя пользователя с правами админа
-pasw = input('type password ') #пароль
-#way_to = 'c:\\nowwhat'  #папка где всё хранится
+
 linebreake = '********************'
 way_to = os.path.abspath(__file__)
 way_to = os.path.dirname(way_to)
 
-#подгатавливаем файл логов к записи событий данной сессии
+# подгатавливаем файл логов к записи событий данной сессии
 with open(way_to + '\\log.txt', 'w') as logfile:
     logfile.write(str(datetime.datetime.now()) + '\n')
 
-with open(way_to + "\list.txt") as list_of_arms: #читаем по списку армы
-    for ARM in list_of_arms:
-        ARM = ARM.strip()
-        print(linebreake)
-        logwritting(linebreake)
+#Основное окно программы
+main_window = tkinter.Tk()
+main_window.title("Know_what программа анализа сведений об АРМ-е")
+main_window.geometry('600x350+500+200')
+#вторичное окно для отображения списка АРМ-ов
+list_arm_window = tkinter.Tk()
+list_arm_window.title("Список АРМ-ов")
+list_arm_window.geometry('300x250+1110+200')
+#описание элементов окна
+lbl_log = tkinter.Label(main_window, text = "файл лога: " + way_to + "\log.txt", font = ("Arial", 8, 'bold'))
+lbl_list = tkinter.Label(main_window, text = "список запрашиваемых АРМ-ов: " + way_to + "\list.txt", font = ("Arial", 8, 'bold'))
+enter_passw = tkinter.Entry(main_window, width = 20, show = "*")
+enter_login = tkinter.Entry(main_window, width = 20)
+lbl_login = tkinter.Label(main_window, text = "User")
+lbl_passw = tkinter.Label(main_window, text = "Password")
+btn_start = tkinter.Button(main_window, text = "Start")
+lbl_list_arm = tkinter.Label(list_arm_window, text = "List of ARMS")
+# расстановка элементов в окне
+lbl_log.place(x = 5, y = 310)
+lbl_list.place(x = 5, y = 330)
+enter_login.place(x = 80, y = 60)
+enter_passw.place(x = 350, y = 60)
+lbl_login.place(x = 45, y = 60)
+lbl_passw.place(x = 285, y = 60)
+btn_start.place(x =260, y = 120)
+lbl_list_arm.place(x = 5, y = 5)
 
-        # если АРМ доступен, узнаём IP адрес
-        response = pythonping.ping(ARM, count=1 )
-        try:
-            if response.success():
-                IP_address = socket.gethostbyname(ARM)
-                print('IP addres of ARM: ' + IP_address)
-                print('Name of ARM ' + ARM)
-                logwritting(ARM)
-                logwritting(IP_address)
+# кнопка старта
+btn_start.bind('<Button-1>', Start)
 
-                #узнаём версию СПО
-                print('searching soft...')
-                tmpprogramm = knowversion(ARM,way_to)
-                if tmpprogramm != '':
-                    print('now installed ' + tmpprogramm)
-                else:
-                    print('No DT programm installed')
-                logwritting(tmpprogramm)
 
-                #узнаём активного пользователя
-                user_DT = knowuser(ARM,way_to)
-                print('Now working: ' + user_DT + ' user')
-                logwritting(user_DT)
 
-                #узнаём версию OS
-                version = know_OS(ARM,way_to)
-                print('Версия ОС: ' + version)
-                logwritting(version)
-
-            else:
-                notavailable = ARM + ' is not available'
-                print(notavailable)
-                logwritting(notavailable)
-        except:
-            print('can\'t work with' + ARM)
-            break
-print(linebreake)
-print(linebreake)
-while True:
-    pass
+main_window.mainloop()

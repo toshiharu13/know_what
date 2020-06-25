@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['now_what.py'],
-             pathex=['c:\\nowwhat\\dist'],
+             pathex=['C:\\knowwhat\\dist'],
              binaries=[],
              datas=[],
              hiddenimports=[],
